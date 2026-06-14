@@ -24,9 +24,8 @@
  *   - PPS routing and SCK/SDO/SDI/CS GPIO pin setup    -> board-specific init
  *
  * Independence: this HAL is self-contained and does not depend on any audio /
- * TDM SPI driver. By default dspic33ak_spi_init() refuses SPI1 (see the guard
- * in dspic33ak_spi.c), since on many boards SPI1 is dedicated to another
- * transport; adjust that guard if SPI1 is free on your board.
+ * TDM SPI driver. If a board uses one SPI instance for another transport, the
+ * application or board layer is responsible for avoiding conflicts.
  */
 
 #include <stdint.h>
@@ -121,7 +120,6 @@ typedef struct
  * Returns false (and leaves handle->initialized == false) on:
  *   - NULL handle/config
  *   - instance out of range / not present on this device
- *   - SPI1 instance (reserved by default; see the SPI1 guard in the .c)
  *   - mode out of range (not DSPIC33AK_SPI_MODE_0..3)
  *   - peripheralClockHz == 0 or targetSckHz == 0
  */

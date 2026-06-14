@@ -17,9 +17,10 @@ Current validation target:
 * Tested peripheral: SST26 external SPI NOR flash
 * Mode / clock: SPI mode 0, 8-bit, 12.5 MHz SCK (PBCLK 100 MHz, BRG = 3)
 
-Other SPI instances (SPI1..SPI3) are supported by the same code; the register
-table adapts automatically to whichever instances the device header defines.
-Hardware validation has been performed on SPI4.
+All SPI instances exposed by the selected dsPIC33AK device header can be driven
+through the same code path; the register table adapts automatically to whichever
+instances the device header defines. Hardware validation has been performed on
+SPI4 with an SST26 external SPI NOR flash.
 
 Confirmed operations on the validation target:
 
@@ -104,11 +105,13 @@ A simple device transaction (caller controls chip-select):
 
 ```c
 my_cs_assert();
-(void)dspic33ak_spi_transfer8(&s_spi, 0x9F);     /* command */
-uint8_t b0 = dspic33ak_spi_transfer8(&s_spi, 0x00);
-uint8_t b1 = dspic33ak_spi_transfer8(&s_spi, 0x00);
+(void)dspic33ak_spi_transfer8(&s_spi, 0x9F);     /* JEDEC ID command */
+uint8_t mfr = dspic33ak_spi_transfer8(&s_spi, 0x00);
+uint8_t typ = dspic33ak_spi_transfer8(&s_spi, 0x00);
+uint8_t id  = dspic33ak_spi_transfer8(&s_spi, 0x00);
 dspic33ak_spi_wait_done(&s_spi);                 /* shifter idle before CS high */
 my_cs_deassert();
+(void)mfr; (void)typ; (void)id;
 ```
 
 ## Simple vs extended API
@@ -153,15 +156,21 @@ DSPIC33AK_SPI_RESULT_OVERFLOW
 ```
 
 `dspic33ak_spi_init()` returns `false` (and records the result in the handle) on
-a NULL config, an instance not present on the device, the SPI1 instance (treated
-as reserved — see Notes), an out-of-range mode, or a zero clock value.
+a NULL config, an instance not present on the device, an out-of-range mode, or a
+zero clock value.
 
-## Instance selection and SPI1
+## Instance selection
 
-`dspic33ak_spi_init()` refuses `DSPIC33AK_SPI_INST_1` and returns
-`DSPIC33AK_SPI_RESULT_UNSUPPORTED`. On the reference board SPI1 (and optionally
-SPI2) is reserved for an audio/TDM transport, so the generic HAL never
-re-initializes it. Adjust this guard for a board where SPI1 is free.
+`dspic33ak_spi_init()` can initialize any SPI instance that exists in the
+selected device header and has an entry in the internal register table.
+
+The table is indexed by `DSPIC33AK_SPI_INST_1` .. `DSPIC33AK_SPI_INST_4`.
+If a requested instance is not present on the target device, initialization
+fails and `DSPIC33AK_SPI_RESULT_UNSUPPORTED` is recorded in the handle.
+
+This HAL does not know board-level ownership. If a board uses a given SPI
+instance for audio, TDM, another device, or another driver, the application or
+board layer must avoid that conflict.
 
 ## Timeout cleanup
 

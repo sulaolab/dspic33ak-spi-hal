@@ -15,9 +15,6 @@
  *   - PPS routing and SCK/SDO/SDI/CS GPIO are NOT done here. Pin routing and the
  *     CS / WP / RESET control lines belong to the board / device layer; this HAL
  *     owns only the SPI module registers.
- *   - By default dspic33ak_spi_init() refuses SPI1 (see the SPI1 guard below):
- *     on many boards SPI1 is dedicated to another transport. Adjust or remove
- *     that guard if SPI1 is free on your board.
  */
 
 //===========================================================
@@ -141,19 +138,6 @@ bool dspic33ak_spi_init(dspic33ak_spi_handle_t *handle, const dspic33ak_spi_conf
     if (r == 0)
     {
         /* instance not present on this device */
-        (void)dspic33ak_spi_set_result(handle, DSPIC33AK_SPI_RESULT_UNSUPPORTED);
-        return false;
-    }
-
-    /*
-     * SPI1 is treated as reserved by default: on many boards it is dedicated to
-     * another transport, so the generic SPI HAL refuses it to avoid disturbing a
-     * peripheral owned by another driver. Remove or adjust this guard if SPI1 is
-     * free on your board. The application is responsible for not configuring an
-     * instance that conflicts with another driver.
-     */
-    if (config->instance == DSPIC33AK_SPI_INST_1)
-    {
         (void)dspic33ak_spi_set_result(handle, DSPIC33AK_SPI_RESULT_UNSUPPORTED);
         return false;
     }
