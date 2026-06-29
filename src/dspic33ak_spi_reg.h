@@ -7,7 +7,7 @@
 /*
  * Internal register helper layer for the blocking 8-bit SPI HAL.
  *
- * Like dspic33ak_dma_reg.h / dspic33ak_i2c_reg.h / dspic33ak_tdm_i2s_reg.h, this
+ * Like dspic33ak_dma_reg.h / dspic33ak_i2c_reg.h / dspic33ak_spi_i2s_tdm_reg.h, this
  * intentionally uses plain 32-bit register pointers and bit masks instead of the
  * XC-DSC bitfield structures (SPIxCON1bits / SPIxSTATbits).  The goal is to let
  * one driver body drive any of SPI1..SPI4 through a table of register pointers,
